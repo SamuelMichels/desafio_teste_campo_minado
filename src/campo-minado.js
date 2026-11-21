@@ -73,13 +73,9 @@ export class Campo {
       this.grade[y][x].bomba = true;
     }
 
-    for (let y = 0; y < ALTURA; y += 1) {
-      for (let x = 0; x < LARGURA; x += 1) {
-        this.grade[y][x].vizinhas = vizinhancaDe(x, y)
-          .filter(([vx, vy]) => this.grade[vy][vx].bomba).length;
-      }
-    }
+    this.#recontarVizinhas();
 
+    this.primeiraRevelacaoFeita = false;
     this.encerrado = false;
     this.vitoria = false;
     this.derrota = false;
@@ -102,6 +98,11 @@ export class Campo {
     if (this.grade[y][x].revelada) {
       return;
     }
+
+    if (!this.primeiraRevelacaoFeita && this.grade[y][x].bomba) {
+      this.#realocarBomba(x, y);
+    }
+    this.primeiraRevelacaoFeita = true;
 
     if (this.grade[y][x].bomba) {
       this.#perder();
@@ -138,6 +139,33 @@ export class Campo {
     }
 
     celula.bandeira = !celula.bandeira;
+  }
+
+  #recontarVizinhas() {
+    for (let y = 0; y < ALTURA; y += 1) {
+      for (let x = 0; x < LARGURA; x += 1) {
+        this.grade[y][x].vizinhas = vizinhancaDe(x, y)
+          .filter(([vx, vy]) => this.grade[vy][vx].bomba).length;
+      }
+    }
+  }
+
+  /**
+   * A primeira revelacao do jogo nunca pode ser uma bomba: perder na primeira
+   * jogada seria sorte, nao jogo. A bomba e movida para a primeira celula livre
+   * na ordem de varredura, e nao apagada, para o total continuar em 40.
+   */
+  #realocarBomba(x, y) {
+    for (let ny = 0; ny < ALTURA; ny += 1) {
+      for (let nx = 0; nx < LARGURA; nx += 1) {
+        if (!this.grade[ny][nx].bomba && !(nx === x && ny === y)) {
+          this.grade[ny][nx].bomba = true;
+          this.grade[y][x].bomba = false;
+          this.#recontarVizinhas();
+          return;
+        }
+      }
+    }
   }
 
   /** Pisar numa bomba encerra o jogo e poe todas as bombas a mostra. */

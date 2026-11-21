@@ -3,7 +3,16 @@ import assert from "node:assert/strict";
 
 import { Campo, ALTURA } from "../src/campo-minado.js";
 
-const tresBombas = () => new Campo({ bombas: [[0, 0], [5, 5], [17, 13]] });
+/**
+ * Tres bombas conhecidas, com a primeira revelacao do jogo ja gasta em (1,1).
+ * A protecao da primeira jogada (ver primeira-jogada.test.js) realocaria a bomba
+ * se a derrota fosse testada de saida; (1,1) e numerada, entao nao espalha cascata.
+ */
+const tresBombas = () => {
+  const campo = new Campo({ bombas: [[0, 0], [5, 5], [17, 13]] });
+  campo.revelar(1, 1);
+  return campo;
+};
 
 const paredeNaColuna5 = () => {
   const bombas = [];
@@ -41,7 +50,7 @@ describe("Derrota", () => {
     campo.revelar(0, 0);
 
     const estado = campo.estado();
-    assert.equal(estado.reveladas, 3, "apenas as tres bombas");
+    assert.equal(estado.reveladas, 4, "as tres bombas e a (1,1) da primeira jogada");
     assert.equal(estado.grade[7][9].revelada, false);
   });
 
