@@ -85,6 +85,39 @@ export class Campo {
     this.derrota = false;
   }
 
+  /**
+   * Revela (x, y). Numa celula sem bomba vizinha a revelacao se propaga em
+   * cascata: as 8 adjacentes entram, e so as que tambem estao em zero continuam
+   * propagando. Uma celula com bomba nunca e alcancada pela cascata, porque
+   * uma celula em zero, por definicao, nao tem bomba por perto.
+   */
+  revelar(x, y) {
+    this.#exigirDentroDoTabuleiro(x, y);
+
+    if (this.grade[y][x].revelada) {
+      return;
+    }
+
+    const pendentes = [[x, y]];
+    while (pendentes.length > 0) {
+      const [cx, cy] = pendentes.pop();
+      const celula = this.grade[cy][cx];
+      if (celula.revelada) {
+        continue;
+      }
+      celula.revelada = true;
+      if (celula.vizinhas === 0) {
+        pendentes.push(...vizinhancaDe(cx, cy));
+      }
+    }
+  }
+
+  #exigirDentroDoTabuleiro(x, y) {
+    if (!Number.isInteger(x) || !Number.isInteger(y) || x < 0 || x >= LARGURA || y < 0 || y >= ALTURA) {
+      throw new Error(`A coordenada (${x}, ${y}) esta fora do tabuleiro.`);
+    }
+  }
+
   estado() {
     const celulas = this.grade.flat();
     return {
