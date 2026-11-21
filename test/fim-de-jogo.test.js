@@ -23,6 +23,21 @@ const paredeNaColuna5 = () => {
 };
 
 describe("Derrota", () => {
+  // Regra que nenhum caso unitario havia fixado: foi o teste de partida
+  // completa (partida-completa.test.js) que a expos, ao marcar bandeiras e
+  // perder depois. A bandeira certa nao e apagada quando o tabuleiro se abre.
+  test("a bandeira correta continua marcada sobre a bomba revelada", () => {
+    const campo = tresBombas();
+    campo.alternarBandeira(5, 5);
+
+    campo.revelar(0, 0);
+
+    const marcada = campo.estado().grade[5][5];
+    assert.equal(marcada.revelada, true);
+    assert.equal(marcada.bandeira, true);
+    assert.equal(campo.estado().bandeiras, 1);
+  });
+
   test("revelar uma bomba perde o jogo", () => {
     const campo = tresBombas();
 
