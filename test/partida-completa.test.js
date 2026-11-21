@@ -164,6 +164,19 @@ describe("Partida completa", () => {
     }
   });
 
+  test("as 20 sementes exercitam os dois desfechos", () => {
+    const desfechos = { vitorias: 0, derrotas: 0 };
+    for (let semente = 1; semente <= 20; semente += 1) {
+      const { estado } = jogarAteOFim(new Campo({ semente }));
+      desfechos[estado.vitoria ? "vitorias" : "derrotas"] += 1;
+    }
+
+    // Numeros medidos, nao escolhidos: o sorteio e deterministico. O que importa
+    // e que os dois desfechos acontecem, senao os dois testes acima estariam
+    // passando no vacuo, sem nunca entrar no ramo que verificam.
+    assert.deepEqual(desfechos, { vitorias: 5, derrotas: 15 });
+  });
+
   test("a mesma semente reproduz exatamente a mesma partida", () => {
     const uma = jogarAteOFim(new Campo({ semente: 42 }));
     const outra = jogarAteOFim(new Campo({ semente: 42 }));
