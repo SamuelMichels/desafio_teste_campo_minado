@@ -82,7 +82,9 @@ describe("A bandeira protege a celula", () => {
 
 describe("Bandeiras recusadas", () => {
   test("nao se marca bandeira em celula ja revelada", () => {
-    const campo = campoComUmaBomba();
+    // Bomba vizinha de proposito: assim (9,7) e numerada, a revelacao nao se
+    // espalha em cascata e o jogo nao termina em vitoria antes da bandeira.
+    const campo = new Campo({ bombas: [[0, 0], [9, 8]] });
     campo.revelar(9, 7);
 
     assert.throws(() => campo.alternarBandeira(9, 7), /revelada/);

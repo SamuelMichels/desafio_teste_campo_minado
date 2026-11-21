@@ -93,12 +93,18 @@ export class Campo {
    */
   revelar(x, y) {
     this.#exigirDentroDoTabuleiro(x, y);
+    this.#exigirEmAndamento();
 
     if (this.grade[y][x].bandeira) {
       throw new Error(`A celula (${x}, ${y}) esta com bandeira: desmarque antes de revelar.`);
     }
 
     if (this.grade[y][x].revelada) {
+      return;
+    }
+
+    if (this.grade[y][x].bomba) {
+      this.#perder();
       return;
     }
 
@@ -114,11 +120,17 @@ export class Campo {
         pendentes.push(...vizinhancaDe(cx, cy));
       }
     }
+
+    if (this.#todasAsSegurasReveladas()) {
+      this.encerrado = true;
+      this.vitoria = true;
+    }
   }
 
   /** Marca ou desmarca a bandeira de (x, y). A celula marcada nao pode ser revelada. */
   alternarBandeira(x, y) {
     this.#exigirDentroDoTabuleiro(x, y);
+    this.#exigirEmAndamento();
 
     const celula = this.grade[y][x];
     if (celula.revelada) {
@@ -126,6 +138,28 @@ export class Campo {
     }
 
     celula.bandeira = !celula.bandeira;
+  }
+
+  /** Pisar numa bomba encerra o jogo e poe todas as bombas a mostra. */
+  #perder() {
+    for (const celula of this.grade.flat()) {
+      if (celula.bomba) {
+        celula.revelada = true;
+      }
+    }
+    this.encerrado = true;
+    this.derrota = true;
+  }
+
+  /** Vence quem revela as 212 celulas sem bomba; as bombas podem ficar cobertas. */
+  #todasAsSegurasReveladas() {
+    return this.grade.flat().every((celula) => celula.bomba || celula.revelada);
+  }
+
+  #exigirEmAndamento() {
+    if (this.encerrado) {
+      throw new Error(`O jogo esta encerrado (${this.derrota ? "derrota" : "vitoria"}).`);
+    }
   }
 
   #exigirDentroDoTabuleiro(x, y) {
