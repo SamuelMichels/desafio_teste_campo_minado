@@ -45,19 +45,39 @@ function sortearBombas(semente) {
   return posicoes.slice(0, TOTAL_DE_BOMBAS);
 }
 
+const DESLOCAMENTOS = [
+  [-1, -1], [0, -1], [1, -1],
+  [-1, 0], [1, 0],
+  [-1, 1], [0, 1], [1, 1],
+];
+
+/** As adjacentes de (x, y) que existem no tabuleiro: 3 no canto, 5 na borda, 8 no meio. */
+function vizinhancaDe(x, y) {
+  return DESLOCAMENTOS
+    .map(([dx, dy]) => [x + dx, y + dy])
+    .filter(([vx, vy]) => vx >= 0 && vx < LARGURA && vy >= 0 && vy < ALTURA);
+}
+
 export class Campo {
   constructor({ semente, bombas } = {}) {
     this.grade = [];
     for (let y = 0; y < ALTURA; y += 1) {
       const linha = [];
       for (let x = 0; x < LARGURA; x += 1) {
-        linha.push({ bomba: false, revelada: false, bandeira: false });
+        linha.push({ bomba: false, vizinhas: 0, revelada: false, bandeira: false });
       }
       this.grade.push(linha);
     }
 
     for (const [x, y] of bombas ?? sortearBombas(semente ?? 0)) {
       this.grade[y][x].bomba = true;
+    }
+
+    for (let y = 0; y < ALTURA; y += 1) {
+      for (let x = 0; x < LARGURA; x += 1) {
+        this.grade[y][x].vizinhas = vizinhancaDe(x, y)
+          .filter(([vx, vy]) => this.grade[vy][vx].bomba).length;
+      }
     }
 
     this.encerrado = false;
