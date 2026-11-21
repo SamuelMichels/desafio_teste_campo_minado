@@ -94,6 +94,10 @@ export class Campo {
   revelar(x, y) {
     this.#exigirDentroDoTabuleiro(x, y);
 
+    if (this.grade[y][x].bandeira) {
+      throw new Error(`A celula (${x}, ${y}) esta com bandeira: desmarque antes de revelar.`);
+    }
+
     if (this.grade[y][x].revelada) {
       return;
     }
@@ -102,7 +106,7 @@ export class Campo {
     while (pendentes.length > 0) {
       const [cx, cy] = pendentes.pop();
       const celula = this.grade[cy][cx];
-      if (celula.revelada) {
+      if (celula.revelada || celula.bandeira) {
         continue;
       }
       celula.revelada = true;
@@ -110,6 +114,18 @@ export class Campo {
         pendentes.push(...vizinhancaDe(cx, cy));
       }
     }
+  }
+
+  /** Marca ou desmarca a bandeira de (x, y). A celula marcada nao pode ser revelada. */
+  alternarBandeira(x, y) {
+    this.#exigirDentroDoTabuleiro(x, y);
+
+    const celula = this.grade[y][x];
+    if (celula.revelada) {
+      throw new Error(`A celula (${x}, ${y}) ja esta revelada: nao aceita bandeira.`);
+    }
+
+    celula.bandeira = !celula.bandeira;
   }
 
   #exigirDentroDoTabuleiro(x, y) {
